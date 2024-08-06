@@ -4,53 +4,69 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <variant>
 
-namespace json {
+namespace json
+{
 
-class Node;
-// Сохраните объявления Dict и Array без изменения
-using Dict = std::map<std::string, Node>;
-using Array = std::vector<Node>;
+    class Node;
+    // Сохраните объявления Dict и Array без изменения
+    using Dict = std::map<std::string, Node>;
+    using Array = std::vector<Node>;
 
-// Эта ошибка должна выбрасываться при ошибках парсинга JSON
-class ParsingError : public std::runtime_error {
-public:
-    using runtime_error::runtime_error;
-};
+    // Эта ошибка должна выбрасываться при ошибках парсинга JSON
+    class ParsingError : public std::runtime_error
+    {
+    public:
+        using runtime_error::runtime_error;
+    };
 
-class Node {
-public:
-   /* Реализуйте Node, используя std::variant */
+    class Node
+    {
+    public:
+        Node() = default;
+        explicit Node(Array array);
+        explicit Node(Dict map);
+        explicit Node(int value);
+        explicit Node(double value);
+        explicit Node(std::string value);
+        explicit Node(bool value);
 
-    explicit Node(Array array);
-    explicit Node(Dict map);
-    explicit Node(int value);
-    explicit Node(std::string value);
+        const Array &AsArray() const;
+        const Dict &AsMap() const;
+        int AsInt() const;
+        const std::string &AsString() const;
+        double AsDouble() const;
+        bool AsBool() const;
 
-    const Array& AsArray() const;
-    const Dict& AsMap() const;
-    int AsInt() const;
-    const std::string& AsString() const;
+        bool IsInt() const;
+        bool IsDouble() const;
+        bool IsPureDouble() const;
+        bool IsBool() const;
+        bool IsString() const;
+        bool IsNull() const;
+        bool IsArray() const;
+        bool IsMap() const;
 
-private:
-    Array as_array_;
-    Dict as_map_;
-    int as_int_ = 0;
-    std::string as_string_;
-};
+        bool operator==(const Node& rhs) const;
+        bool operator!=(const Node& rhs) const;
+    private:
+        std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict, std::nullptr_t> data_;
+    };
 
-class Document {
-public:
-    explicit Document(Node root);
+    class Document
+    {
+    public:
+        explicit Document(Node root);
 
-    const Node& GetRoot() const;
+        const Node &GetRoot() const;
 
-private:
-    Node root_;
-};
+    private:
+        Node root_;
+    };
 
-Document Load(std::istream& input);
+    Document Load(std::istream &input);
 
-void Print(const Document& doc, std::ostream& output);
+    void Print(const Document &doc, std::ostream &output);
 
-}  // namespace json
+} // namespace json
