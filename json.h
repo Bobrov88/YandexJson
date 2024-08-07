@@ -23,13 +23,16 @@ namespace json
     class Node
     {
     public:
-        Node() = default;
+        using Value = std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict>;
+        Node();
         explicit Node(Array array);
         explicit Node(Dict map);
         explicit Node(int value);
         explicit Node(double value);
         explicit Node(std::string value);
         explicit Node(bool value);
+
+        const Value &GetValue() const;
 
         const Array &AsArray() const;
         const Dict &AsMap() const;
@@ -47,10 +50,11 @@ namespace json
         bool IsArray() const;
         bool IsMap() const;
 
-        bool operator==(const Node& rhs) const;
-        bool operator!=(const Node& rhs) const;
+        bool operator==(const Node &rhs) const;
+        bool operator!=(const Node &rhs) const;
+
     private:
-        std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict> data_;
+        Value data_;
     };
 
     class Document

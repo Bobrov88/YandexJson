@@ -6,7 +6,6 @@ namespace json
 {
     namespace
     {
-
         Node LoadNode(istream &input);
 
         Node LoadArray(istream &input)
@@ -88,12 +87,15 @@ namespace json
 
     } // namespace
 
+    Node::Node() : data_(nullptr) {}
     Node::Node(Array array) : data_(std::move(array)) {}
     Node::Node(Dict map) : data_(std::move(map)) {}
     Node::Node(int value) : data_(value) {}
     Node::Node(double value) : data_(value) {}
     Node::Node(std::string value) : data_(std::move(value)) {}
     Node::Node(bool value) : data_(value) {}
+
+    const Node::Value &Node::GetValue() const { return data_; }
 
     const Array &Node::AsArray() const
     {
@@ -109,7 +111,7 @@ namespace json
     }
     int Node::AsInt() const
     {
-        if (AsInt())
+        if (IsInt())
             return std::get<int>(data_);
         throw std::logic_error("Logic error");
     }
@@ -177,27 +179,90 @@ namespace json
         return !(*this == rhs);
     }
 
-Document::Document(Node root)
-    : root_(move(root))
-{
-}
+    Document::Document(Node root)
+        : root_(move(root))
+    {
+    }
 
-const Node &Document::GetRoot() const
-{
-    return root_;
-}
+    const Node &Document::GetRoot() const
+    {
+        return root_;
+    }
 
-Document Load(istream &input)
-{
-    return Document{LoadNode(input)};
-}
+    Document Load(istream &input)
+    {
+        return Document{LoadNode(input)};
+    }
 
-void Print(const Document &doc, std::ostream &output)
-{
-    (void)&doc;
-    (void)&output;
+    void PrintNode(const Node &node, std::ostream &out);
 
-    // Реализуйте функцию самостоятельно
-}
+    template <typename Type>
+    void PrintValue(const Type &value, std::ostream &out)
+    {
+        out << value;
+    }
+
+    void PrintValue(std::nullptr_t, std::ostream &out)
+    {
+        out << "null"sv;
+    }
+
+    void PrintValue(const json::Dict &dict, std::ostream &out)
+    {
+        out << "{"sv;
+        for (const auto &[key, value] : dict)
+        {
+            PrintValue(key, out);
+            out << ","sv;
+            PrintNode(value, out);
+        }
+        out << "}"sv;
+    }
+
+    void PrintValue(const std::string &str, std::ostream &out)
+    {
+        out << "\""sv << str << "\""sv;
+    }
+
+    void PrintValue(const json::Array &array, std::ostream &out)
+    {
+        out << "["sv;
+        bool is_first = true;
+        for (const auto &value : array)
+        {
+            if (is_first)
+            {
+                is_first = false;
+            }
+            else
+            {
+                out << ","sv;
+            }
+            PrintNode(value, out);
+        }
+        out << "]"sv;
+    }
+
+    void PrintValue(const bool value, std::ostream &out)
+    {
+        if (value)
+            out << "true";
+        else
+            out << "false";
+    }
+
+    void PrintNode(const Node &node, std::ostream &out)
+    {
+        std::visit(
+            [&out](const auto &value)
+            { PrintValue(value, out); },
+            node.GetValue());
+    }
+
+    void Print(const Document &doc, std::ostream &out)
+    {
+        auto &root = doc.GetRoot();
+        PrintNode(root, out);
+    }
 
 } // namespace json
