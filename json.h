@@ -8,7 +8,6 @@
 
 namespace json
 {
-
     class Node;
     // Сохраните объявления Dict и Array без изменения
     using Dict = std::map<std::string, Node>;
@@ -51,7 +50,7 @@ namespace json
         bool operator==(const Node& rhs) const;
         bool operator!=(const Node& rhs) const;
     private:
-        std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict, std::nullptr_t> data_;
+        std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict> data_;
     };
 
     class Document

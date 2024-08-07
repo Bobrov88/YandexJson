@@ -169,12 +169,13 @@ namespace json
 
     bool Node::operator==(const Node &rhs) const
     {
-        int l_index = this->data_.index();
-        int r_index = rhs.data_.index();
-        return (l_index == r_index &&
-                std::get<l_index>(data_) == std::get<r_index>(rhs_))
+        return this->data_ == rhs.data_;
     }
-}
+
+    bool Node::operator!=(const Node &rhs) const
+    {
+        return !(*this == rhs);
+    }
 
 Document::Document(Node root)
     : root_(move(root))
