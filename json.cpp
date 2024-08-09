@@ -87,14 +87,6 @@ namespace json
 
     } // namespace
 
-    Node::Node() : data_(nullptr) {}
-    Node::Node(Array array) : data_(std::move(array)) {}
-    Node::Node(Dict map) : data_(std::move(map)) {}
-    Node::Node(int value) : data_(value) {}
-    Node::Node(double value) : data_(value) {}
-    Node::Node(std::string value) : data_(std::move(value)) {}
-    Node::Node(bool value) : data_(value) {}
-
     const Node::Value &Node::GetValue() const { return data_; }
 
     const Array &Node::AsArray() const
@@ -221,7 +213,9 @@ namespace json
 
     void PrintValue(const std::string &str, std::ostream &out)
     {
-        out << "\""sv << str << "\""sv;
+        out << "\""sv;
+        PrintEscape(str, out);
+        out << "\""sv;
     }
 
     void PrintValue(const json::Array &array, std::ostream &out)
@@ -263,6 +257,26 @@ namespace json
     {
         auto &root = doc.GetRoot();
         PrintNode(root, out);
+    }
+
+    void PrintEscape(const std::string &str, std::ostream &out)
+    {
+        auto it = std::istreambuf_iterator<char>(str);
+        auto end = std::istreambuf_iterator<char>();
+        for (char c : str)
+        {
+            if (c == '\\')
+            {
+                out << "\\"sv;
+            }
+            switch (c)
+            {
+            case '\\':
+                out << '\\';
+                break;
+                case
+            }
+        }
     }
 
 } // namespace json

@@ -1,6 +1,5 @@
 #include <cassert>
 #include <chrono>
-#include <sstream>
 #include <string_view>
 
 #include "json.h"
@@ -434,14 +433,12 @@ namespace
 
 int main()
 {
-    /*
+        TestStrings();
         TestNull();
         TestNumbers();
-        TestStrings();
         TestBool();
         TestArray();
         TestMap();
         TestErrorHandling();
         Benchmark();
-    */
 }

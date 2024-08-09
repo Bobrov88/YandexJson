@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <sstream>
 
 namespace json
 {
@@ -24,17 +25,13 @@ namespace json
     {
     public:
         using Value = std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict>;
-        Node();
-        explicit Node(Array array);
-        explicit Node(Dict map);
-        explicit Node(int value);
-        explicit Node(double value);
-        explicit Node(std::string value);
-        explicit Node(bool value);
+        Node() = default;
+        template <typename Type>
+        Node(Type value) : data_(std::move(value)) {}
 
         const Value &GetValue() const;
 
-        const Array &AsArray() const;
+        const Array &AsArray() const; 
         const Dict &AsMap() const;
         int AsInt() const;
         const std::string &AsString() const;
@@ -71,5 +68,6 @@ namespace json
     Document Load(std::istream &input);
 
     void Print(const Document &doc, std::ostream &output);
+    void PrintEscape(const std::string &str, std::ostream &out);
 
 } // namespace json
