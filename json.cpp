@@ -261,22 +261,35 @@ namespace json
 
     void PrintEscape(const std::string &str, std::ostream &out)
     {
-        auto it = std::istreambuf_iterator<char>(str);
+        std::istringstream istr{str};
+        auto it = std::istreambuf_iterator<char>(istr);
         auto end = std::istreambuf_iterator<char>();
-        for (char c : str)
+        while (it != end)
         {
-            if (c == '\\')
+            if (*it == '\\')
             {
-                out << "\\"sv;
+                ++it;
+                switch (*it)
+                {
+                case 'n':
+                    out << "\n";
+                    break;
+                case 'r':
+                    out << "\r";
+                    break;
+                case 't':
+                    out << '\t';
+                    break;
+                case '\\':
+                    out << '\\';
+                    break;
+                case '\"':
+                    out << "\"";
+                    break;
+                }
             }
-            switch (c)
-            {
-            case '\\':
-                out << '\\';
-                break;
-                case
-            }
+            out << *it;
+            ++it;
         }
     }
-
 } // namespace json
