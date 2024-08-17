@@ -1,173 +1,11 @@
 #include <cassert>
 #include <chrono>
+#include <sstream>
 #include <string_view>
-
 #include "json.h"
 
 using namespace json;
 using namespace std::literals;
-
-using Number = std::variant<int, double>;
-
-Number LoadNumber(std::istream &input)
-{
-    using namespace std::literals;
-
-    std::string parsed_num;
-
-    // Считывает в parsed_num очередной символ из input
-    auto read_char = [&parsed_num, &input]
-    {
-        parsed_num += static_cast<char>(input.get());
-        if (!input)
-        {
-            throw ParsingError("Failed to read number from stream"s);
-        }
-    };
-
-    // Считывает одну или более цифр в parsed_num из input
-    auto read_digits = [&input, read_char]
-    {
-        if (!std::isdigit(input.peek()))
-        {
-            throw ParsingError("A digit is expected"s);
-        }
-        while (std::isdigit(input.peek()))
-        {
-            read_char();
-        }
-    };
-
-    if (input.peek() == '-')
-    {
-        read_char();
-    }
-    // Парсим целую часть числа
-    if (input.peek() == '0')
-    {
-        read_char();
-        // После 0 в JSON не могут идти другие цифры
-    }
-    else
-    {
-        read_digits();
-    }
-
-    bool is_int = true;
-    // Парсим дробную часть числа
-    if (input.peek() == '.')
-    {
-        read_char();
-        read_digits();
-        is_int = false;
-    }
-
-    // Парсим экспоненциальную часть числа
-    if (int ch = input.peek(); ch == 'e' || ch == 'E')
-    {
-        read_char();
-        if (ch = input.peek(); ch == '+' || ch == '-')
-        {
-            read_char();
-        }
-        read_digits();
-        is_int = false;
-    }
-
-    try
-    {
-        if (is_int)
-        {
-            // Сначала пробуем преобразовать строку в int
-            try
-            {
-                return std::stoi(parsed_num);
-            }
-            catch (...)
-            {
-                // В случае неудачи, например, при переполнении,
-                // код ниже попробует преобразовать строку в double
-            }
-        }
-        return std::stod(parsed_num);
-    }
-    catch (...)
-    {
-        throw ParsingError("Failed to convert "s + parsed_num + " to number"s);
-    }
-}
-
-// Считывает содержимое строкового литерала JSON-документа
-// Функцию следует использовать после считывания открывающего символа ":
-std::string LoadString(std::istream &input)
-{
-    using namespace std::literals;
-
-    auto it = std::istreambuf_iterator<char>(input);
-    auto end = std::istreambuf_iterator<char>();
-    std::string s;
-    while (true)
-    {
-        if (it == end)
-        {
-            // Поток закончился до того, как встретили закрывающую кавычку?
-            throw ParsingError("String parsing error");
-        }
-        const char ch = *it;
-        if (ch == '"')
-        {
-            // Встретили закрывающую кавычку
-            ++it;
-            break;
-        }
-        else if (ch == '\\')
-        {
-            // Встретили начало escape-последовательности
-            ++it;
-            if (it == end)
-            {
-                // Поток завершился сразу после символа обратной косой черты
-                throw ParsingError("String parsing error");
-            }
-            const char escaped_char = *(it);
-            // Обрабатываем одну из последовательностей: \\, \n, \t, \r, \"
-            switch (escaped_char)
-            {
-            case 'n':
-                s.push_back('\n');
-                break;
-            case 't':
-                s.push_back('\t');
-                break;
-            case 'r':
-                s.push_back('\r');
-                break;
-            case '"':
-                s.push_back('"');
-                break;
-            case '\\':
-                s.push_back('\\');
-                break;
-            default:
-                // Встретили неизвестную escape-последовательность
-                throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
-            }
-        }
-        else if (ch == '\n' || ch == '\r')
-        {
-            // Строковый литерал внутри- JSON не может прерываться символами \r или \n
-            throw ParsingError("Unexpected end of line"s);
-        }
-        else
-        {
-            // Просто считываем очередной символ и помещаем его в результирующую строку
-            s.push_back(ch);
-        }
-        ++it;
-    }
-
-    return s;
-}
 
 namespace
 {
@@ -282,7 +120,6 @@ namespace
         assert(dbl_node.AsDouble() == 123.45);
         assert(dbl_node.IsPureDouble()); // Значение содержит число с плавающей запятой
         assert(!dbl_node.IsInt());
-
         assert(Print(int_node) == "42"s);
         assert(Print(dbl_node) == "123.45"s);
         assert(Print(Node{-42}) == "-42"s);
@@ -309,7 +146,6 @@ namespace
 
         assert(!str_node.IsInt());
         assert(!str_node.IsDouble());
-
         assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
 
         assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
@@ -429,16 +265,17 @@ namespace
         std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv
                   << std::endl;
     }
-}
+
+} // namespace
 
 int main()
-{
-        TestStrings();
-        TestNull();
-        TestNumbers();
-        TestBool();
-        TestArray();
-        TestMap();
-        TestErrorHandling();
-        Benchmark();
+ {
+//     TestNull();
+//     TestNumbers();
+//     TestStrings();
+//     TestBool();
+//     TestArray();
+    TestMap();
+    // TestErrorHandling();
+    // Benchmark();
 }

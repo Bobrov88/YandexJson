@@ -6,6 +6,9 @@
 #include <vector>
 #include <variant>
 #include <sstream>
+#include <math.h>
+#include <cassert>
+#include <fstream>
 
 namespace json
 {
@@ -31,7 +34,7 @@ namespace json
 
         const Value &GetValue() const;
 
-        const Array &AsArray() const; 
+        const Array &AsArray() const;
         const Dict &AsMap() const;
         int AsInt() const;
         const std::string &AsString() const;
