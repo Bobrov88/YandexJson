@@ -158,8 +158,8 @@ namespace json
         Node LoadArray(istream &input)
         {
             Array result;
-
-            for (char c; input >> c && c != ']';)
+            char c;
+            for (; input >> c && c != ']';)
             {
                 if (c != ',')
                 {
@@ -167,7 +167,10 @@ namespace json
                 }
                 result.push_back(LoadNode(input));
             }
-
+            if (c != ']')
+            {
+                throw ParsingError("Expected ']'");
+            }
             return Node(move(result));
         }
 
@@ -244,8 +247,8 @@ namespace json
         Node LoadDict(istream &input)
         {
             Dict result;
-
-            for (char c; input >> c && c != '}';)
+            char c;
+            for (; input >> c && c != '}';)
             {
                 if (c == ',')
                 {
@@ -256,7 +259,10 @@ namespace json
                 input >> c;
                 result.insert({move(key), LoadNode(input)});
             }
-
+            if (c != '}')
+            {
+                throw ParsingError("Expected '}'");
+            }
             return Node(move(result));
         }
 
@@ -287,10 +293,14 @@ namespace json
                 input.putback(c);
                 return LoadBool(input);
             }
-            else
+            else if ((c > 47 && c < 58) || c == '.' || c == '+' || c == '-')
             {
                 input.putback(c);
                 return LoadNumber(input);
+            }
+            else
+            {
+                throw ParsingError("Unexpected symbol");
             }
         }
 
@@ -411,14 +421,20 @@ namespace json
 
     void PrintValue(const json::Dict &dict, std::ostream &out)
     {
-        out << "{"sv;
+        out << "{ "sv;
+        bool isSinglePair = true;
         for (const auto &[key, value] : dict)
         {
-            PrintValue(key, out);
-            out << ","sv;
+            if (!isSinglePair)
+            {
+                out << " , "sv;
+            }
+            PrintNode(key, out);
+            out << " : "sv;
             PrintNode(value, out);
+            isSinglePair = false;
         }
-        out << "}"sv;
+        out << " }"sv;
     }
 
     void PrintValue(const std::string &str, std::ostream &out)

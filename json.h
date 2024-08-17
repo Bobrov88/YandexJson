@@ -6,9 +6,6 @@
 #include <vector>
 #include <variant>
 #include <sstream>
-#include <math.h>
-#include <cassert>
-#include <fstream>
 
 namespace json
 {

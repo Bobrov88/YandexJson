@@ -269,13 +269,13 @@ namespace
 } // namespace
 
 int main()
- {
-//     TestNull();
-//     TestNumbers();
-//     TestStrings();
-//     TestBool();
-//     TestArray();
+{
+    TestNull();
+    TestNumbers();
+    TestStrings();
+    TestBool();
+    TestArray();
     TestMap();
-    // TestErrorHandling();
-    // Benchmark();
+    TestErrorHandling();
+    Benchmark();
 }
