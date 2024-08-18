@@ -166,7 +166,15 @@ namespace
         Node false_node{false};
         assert(false_node.IsBool());
         assert(!false_node.AsBool());
-
+        try
+        {
+            LoadJSON("truestory"s);
+            assert(false);
+        }
+        catch (ParsingError e)
+        {
+            assert(true);
+        }
         assert(Print(true_node) == "true"s);
         assert(Print(false_node) == "false"s);
 

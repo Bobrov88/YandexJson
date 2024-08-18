@@ -58,9 +58,9 @@ namespace json
     {
     public:
         explicit Document(Node root);
-
         const Node &GetRoot() const;
-
+        bool operator==(const Document& rhs) const;
+        bool operator!=(const Document& rhs) const;
     private:
         Node root_;
     };

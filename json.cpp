@@ -12,21 +12,21 @@ namespace json
 
         Node LoadNull(std::istream &input)
         {
-            char c = input.get();
-            if ('n' == c)
+            if ('u' == input.get())
             {
-                if ('u' == input.get())
+                if ('l' == input.get())
                 {
                     if ('l' == input.get())
                     {
-                        if ('l' == input.get())
-                        {
-                            return Node(nullptr);
-                        }
+                        char end = input.get();
+                        if ((end > 45 && end < 92) || (end > 93 && end < 125))
+                            throw ParsingError("Redundant symbols after null");
+                        input.putback(end);
+                        return Node(nullptr);
                     }
                 }
             }
-            throw ParsingError("Similar to null value");
+            throw ParsingError("Similiar to null value");
         }
 
         Node LoadBool(std::istream &input)
@@ -40,6 +40,10 @@ namespace json
                     {
                         if ('e' == input.get())
                         {
+                            char end = input.get();
+                            if ((end > 45 && end < 92) || (end > 93 && end < 125))
+                                throw ParsingError("Redundant symbols after true");
+                            input.putback(end);
                             return Node(true);
                         }
                     }
@@ -57,6 +61,10 @@ namespace json
                             {
                                 if ('e' == input.get())
                                 {
+                                    char end = input.get();
+                                    if ((end > 45 && end < 92) || (end > 93 && end < 125))
+                                        throw ParsingError("Redundant symbols after false");
+                                    input.putback(end);
                                     return Node(false);
                                 }
                             }
@@ -64,7 +72,7 @@ namespace json
                     }
                 }
             }
-            throw ParsingError("Similar to boolean value");
+            throw ParsingError("Similiar to boolean value");
         }
 
         Node LoadNumber(std::istream &input)
@@ -285,7 +293,6 @@ namespace json
             }
             else if (c == 'n')
             {
-                input.putback(c);
                 return LoadNull(input);
             }
             else if (c == 't' || c == 'f')
@@ -399,6 +406,16 @@ namespace json
     const Node &Document::GetRoot() const
     {
         return root_;
+    }
+
+    bool Document::operator==(const Document &rhs) const
+    {
+        return root_ == rhs.root_;
+    }
+
+    bool Document::operator!=(const Document &rhs) const
+    {
+        return !(*this == rhs);
     }
 
     Document Load(istream &input)
